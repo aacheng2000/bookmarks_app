@@ -1,6 +1,4 @@
-
-
-const data = [
+t data = [
 	  {
 		      name: 'LinkedIn',
 		      URL: 'http://www.linkedin.com',
@@ -37,5 +35,3 @@ const data = [
 		      category: 'coding'
 		    },
 ];
-
-module.exports = {data}
