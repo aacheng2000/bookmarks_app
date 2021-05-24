@@ -1,7 +1,12 @@
 const express = require('express')
+const methodOverride = require('method-override')
 const path = require('path')
 const app = express()
 
+//app.use(require('express').urlencoded({extended:false}));
+//const middleware = require('method-override')('_method');
+//app.use(middleware);
+app.use(methodOverride('_method'))
 
 
 // Three Sequelize statmenets
@@ -16,31 +21,49 @@ const conn = new Sequelize(process.env.DATABASE_URL || 'postgres://localhost/db'
 const db = require('./db');
 
 //Express statements
+app.delete('/bookmarks/:id', async(req, res, next)=> {
+	try{
+	//	const bookmarkers = await Bookmarker.findAll()
+	//	await bookmarkers[req.params.id].destroy();
+	
+		const bm = await Bookmarker.findByPk(req.params.id)
+		await bm.destroy()
+
+		res.redirect("/");
+	}
+	catch(ex){
+		next(ex);
+	}
+});
+
+//Express statements
 app.get('/bookmarks/:id', async(req,res,next)=>{
   try{
 const bookmarkers = await Bookmarker.findAll()
 let text = '<ul>'
   for(let i = 0;i<bookmarkers.length;i++) {
   	if(bookmarkers[i].category === req.params.id){
-		text+=`<ul><a href = "${bookmarkers[i].URL}">${bookmarkers[i].name}</ul>`
-	}
+	text+=`<li><form method='POST' action='/bookmarks/${bookmarkers[i].id}?_method=DELETE'>
+	<button>x</button>
+		<a href = "${bookmarkers[i].URL}">${bookmarkers[i].name}</li>`
+}
 
-  }
-	res.send(text + '</ul>')
-  }
-  catch(ex){
-    next(ex)
-  }
+}
+res.send(text + '</ul>')
+}
+catch(ex){
+next(ex)
+}
 })
 
 //Express statements
 app.get('/', async(req,res,next)=> {
-  try{
-  res.redirect('/bookmarks')
-  }
-  catch(ex){
-    next(ex);
-  }
+try{
+res.redirect('/bookmarks')
+}
+catch(ex){
+next(ex);
+}
 })
 
 app.get('/bookmarks', async(req,res,next)=>{
@@ -57,8 +80,18 @@ app.get('/bookmarks', async(req,res,next)=>{
   for (const [key,value] of Object.entries(obj)) {
     text += `<a href = "/bookmarks/${key}">${key} (${value})</a><br>`
   }
+  text +=`<form method='POST' action='/bookmarks'>
+        <label for="bname">Name:</label>
+ 	<input type = 'text' id="bname" name="bname"><br>
+ 	<label for="bcategory">Category:</label>
+	<input type = 'text' id="bcategory" name = "bvategory"><br>
+	<label for="burl">URL:</label>
+	<input type = "text" id="burl" name = "burl"><br>
+	<button>Create</button>
 
-  res.send(text)}
+  </form>
+		`
+ res.send(text)}
   catch(ex){
   	next(ex);
   }
